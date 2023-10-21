@@ -4,9 +4,13 @@ import AppTextInput from "../../app/components/AppTextInput.tsx";
 import {observer} from "mobx-react-lite";
 import {useStore} from "../../app/stores/store.ts";
 import {UserFormValues} from "../../app/models/user.ts";
+import {useState} from "react";
 
 function LoginForm() {
-    const {handleSubmit, control, formState: {isSubmitting, isValid, errors}, setError, reset} = useForm<FieldValues>()
+    const [error, setError] = useState<string | null>(null)
+    const {handleSubmit, control, formState: {isSubmitting, isValid}} = useForm<FieldValues>({
+        mode: 'all'
+    })
     const {userStore} = useStore()
 
     return (
@@ -15,13 +19,12 @@ function LoginForm() {
             try {
                 await userStore.login(user);
             } catch (error) {
-                setError('loginError', {message: 'Invalid email or password'});
-                reset();
+                setError('Invalid email or password');
             }
         })}>
-            <AppTextInput name={'email'} placeholder={'Email'} control={control} rules={{required: true}}/>
-            <AppTextInput name={'password'} type={'password'} placeholder={'Password'} control={control} rules={{required: true}}/>
-            {errors.loginError && <Label basic color={'red'} style={{marginBottom:10}}><>{errors.loginError.message}</></Label>}
+            <AppTextInput name={'email'} placeholder={'Email'} control={control} rules={{required: 'email is required'}}/>
+            <AppTextInput name={'password'} type={'password'} placeholder={'Password'} control={control} rules={{required: 'password is required'}}/>
+            {error && <Label basic color={'red'} content={error}/>}
             <Button loading={isSubmitting} disabled={!isValid} positive type="submit" content="Login" fluid/>
         </Form>
     )

@@ -16,7 +16,6 @@ function AppTextInput(props: Props) {
             />
             {fieldState.error && <Label basic color={'red'}>{fieldState.error.message}</Label>}
         </FormField>
-
     )
 }
 
