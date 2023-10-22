@@ -8,6 +8,7 @@ import {ToastContainer} from "react-toastify";
 import {useStore} from "../stores/store.ts";
 import {useEffect} from "react";
 import LoadingComponent from "./LoadingComponent.tsx";
+import ModalContainer from "../common/ModalContainer.tsx";
 
 function App() {
     const location = useLocation();
@@ -25,6 +26,7 @@ function App() {
 
     return (
         <>
+            <ModalContainer/>
             <ToastContainer position={'bottom-right'} hideProgressBar theme={'colored'}/>
             {location.pathname === '/' ? <HomePage/> : (
                 <>

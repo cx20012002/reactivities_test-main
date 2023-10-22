@@ -1,9 +1,10 @@
 import {Button, Container, Header, Image, Segment} from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import {useStore} from "../../app/stores/store.ts";
+import LoginForm from "../users/LoginForm.tsx";
 
 function HomePage() {
-    const {userStore} = useStore();
+    const {userStore, modalStore} = useStore();
     return (
         <Segment inverted textAlign={'center'} vertical className={'masthead'}>
             <Container text>
@@ -13,15 +14,18 @@ function HomePage() {
                 </Header>
                 {userStore.isLoggedIn ? (
                     <>
-                        <Header as='h2' inverted content={`Welcome back ${userStore.user?.displayName}`} />
+                        <Header as='h2' inverted content={`Welcome back ${userStore.user?.displayName}`}/>
                         <Button as={Link} to='/activities' size='huge' inverted>
                             Go to activities!
                         </Button>
                     </>
                 ) : (
-                    <Button as={Link} to={'/login'} size={'huge'} inverted>Login</Button>
+                    <>
+                        <Button onClick={() => modalStore.openModal(<LoginForm/>)} size={'huge'} inverted>Login</Button>
+                        <Button onClick={() => modalStore.openModal(<h1>Register</h1>)} size={'huge'} inverted>Register</Button>
+                    </>
                 )}
-                
+
             </Container>
         </Segment>
     )

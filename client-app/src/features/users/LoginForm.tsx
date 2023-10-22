@@ -1,4 +1,4 @@
-import {Button, Form, Label} from "semantic-ui-react";
+import {Button, Form, Header, Label} from "semantic-ui-react";
 import {FieldValues, useForm} from "react-hook-form";
 import AppTextInput from "../../app/components/AppTextInput.tsx";
 import {observer} from "mobx-react-lite";
@@ -22,6 +22,7 @@ function LoginForm() {
                 setError('Invalid email or password');
             }
         })}>
+            <Header as='h2' content='Login to Reactivities' color='teal' textAlign='center'/>
             <AppTextInput name={'email'} placeholder={'Email'} control={control} rules={{required: 'email is required'}}/>
             <AppTextInput name={'password'} type={'password'} placeholder={'Password'} control={control} rules={{required: 'password is required'}}/>
             {error && <Label basic color={'red'} content={error}/>}
