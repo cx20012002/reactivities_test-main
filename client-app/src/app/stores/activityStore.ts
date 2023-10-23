@@ -3,6 +3,8 @@ import {Activity} from "../models/activity.ts";
 import agent from "../api/agent.ts";
 import {v4 as uuid} from 'uuid';
 import {format} from "date-fns";
+import {store} from "./store.ts";
+import {Profile} from "../models/Profile.ts";
 
 export default class ActivityStore {
     activityRegistry = new Map<string, Activity>();
@@ -68,6 +70,14 @@ export default class ActivityStore {
     }
 
     private setActivity = (activity: Activity) => {
+        const user = store.userStore.user;
+        if (user) {
+            activity.isGoing = activity.attendees!.some(
+                a => a.username === user.username
+            )
+            activity.isHost = activity.hostUsername === user.username;
+            activity.host = activity.attendees?.find(x => x.username === activity.hostUsername);
+        }
         activity.date = new Date(activity.date);
         this.activityRegistry.set(activity.id, activity);
     }
@@ -123,6 +133,39 @@ export default class ActivityStore {
             })
         } catch (error) {
             console.log(error);
+            runInAction(() => this.loading = false);
+        }
+    }
+    
+   
+    // 1. We get the user from the userStore.
+    // 2. We set the loading state to true.
+    // 3. We try to attend the activity.
+    // 4. If the user is already attending the activity, we remove the user from the attendees list.
+    // 5. If the user is not attending the activity, we add the user to the attendees list.
+    // 6. We set the activity in the activityRegistry.
+    // 7. We set the loading state to false.
+    updateAttendance = async () => {
+        const user = store.userStore.user;
+        this.loading = true;
+        try {
+            await agent.Activities.attend(this.selectedActivity!.id);
+            runInAction(() => {
+                if (this.selectedActivity?.isGoing) {
+                    this.selectedActivity.attendees = this.selectedActivity.attendees?.filter(
+                        a => a.username !== user?.username
+                    )
+                    this.selectedActivity.isGoing = false;
+                } else {
+                   const attendee = new Profile(user!);
+                   this.selectedActivity?.attendees?.push(attendee);
+                     this.selectedActivity!.isGoing = true;
+                }
+                this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!);
+            })
+        } catch (error) {
+            console.log(error);
+        } finally {
             runInAction(() => this.loading = false);
         }
     }

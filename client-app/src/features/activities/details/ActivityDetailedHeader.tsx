@@ -1,8 +1,9 @@
 import {observer} from "mobx-react-lite";
 import {Button, Header, Item, Segment, Image} from 'semantic-ui-react'
 import {Activity} from "../../../app/models/activity.ts";
-import {Link} from "react-router-dom";
 import {format} from "date-fns";
+import {Link} from "react-router-dom";
+import {useStore} from "../../../app/stores/store.ts";
 
 const activityImageStyle = {
     filter: 'brightness(30%)'
@@ -22,6 +23,7 @@ type Props = {
 }
 
 const ActivityDetailedHeader = ({activity}: Props) => {
+    const {activityStore: {updateAttendance, loading}} = useStore();
     return (
         <Segment.Group>
             <Segment basic attached='top' style={{padding: '0'}}>
@@ -36,18 +38,22 @@ const ActivityDetailedHeader = ({activity}: Props) => {
                                     style={{color: 'white'}}
                                 />
                                 <p>{format(activity.date, 'dd MMM yyyy')}</p>
-                                <p>Hosted by <strong>Bob</strong></p>
+                                <p>Hosted by <strong><Link to={`/profiles/${activity.host?.username}`}>{activity.host?.displayName}</Link></strong></p>
                             </Item.Content>
                         </Item>
                     </Item.Group>
                 </Segment>
             </Segment>
             <Segment clearing attached='bottom'>
-                <Button color='teal'>Join Activity</Button>
-                <Button>Cancel attendance</Button>
-                <Button as={Link} to={`/manage/${activity.id}`} color='orange' floated='right'>
-                    Manage Event
-                </Button>
+                {activity.isHost ? (
+                    <Button color='orange' floated='right'>
+                        Manage Event
+                    </Button>
+                ) : activity.isGoing ? (
+                    <Button loading={loading} onClick={updateAttendance}>Cancel attendance</Button>
+                ) : (
+                    <Button loading={loading} onClick={updateAttendance} color='teal'>Join Activity</Button>
+                )}
             </Segment>
         </Segment.Group>
     )
