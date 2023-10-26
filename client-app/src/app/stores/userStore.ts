@@ -26,7 +26,7 @@ export default class UserStore {
             throw error;
         }
     }
-    
+
     register = async (creds: UserFormValues) => {
         try {
             const user = await agent.Account.register(creds);
@@ -53,4 +53,13 @@ export default class UserStore {
             console.log(error);
         }
     }
+
+    setImage = (image: string) => {
+        if (this.user) this.user.image = image;
+    }
+
+    setUsername = (url: string) => {
+        if (this.user) this.user.image = url;
+    }
+
 }
