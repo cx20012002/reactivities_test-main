@@ -8,7 +8,6 @@ import {Profile} from "../models/Profile.ts";
 export default class ActivityStore {
     activityRegistry = new Map<string, Activity>();
     selectedActivity?: Activity | undefined = undefined;
-    editMode = false;
     loading = false;
     loadingInitial = false;
 
@@ -135,14 +134,6 @@ export default class ActivityStore {
         }
     }
 
-
-    // 1. We get the user from the userStore.
-    // 2. We set the loading state to true.
-    // 3. We try to attend the activity.
-    // 4. If the user is already attending the activity, we remove the user from the attendees list.
-    // 5. If the user is not attending the activity, we add the user to the attendees list.
-    // 6. We set the activity in the activityRegistry.
-    // 7. We set the loading state to false.
     updateAttendance = async () => {
         const user = store.userStore.user;
         this.loading = true;
@@ -182,5 +173,5 @@ export default class ActivityStore {
             runInAction(() => this.loading = false);
         }
     }
-
+    
 }

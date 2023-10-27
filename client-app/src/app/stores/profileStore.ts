@@ -34,7 +34,7 @@ export default class ProfileStore {
             this.loadingProfile = false;
         }
     }
-    
+
     uploadPhoto = async (file: Blob) => {
         this.loadingProfile = true;
         try {
@@ -55,7 +55,7 @@ export default class ProfileStore {
             runInAction(() => this.loading = false)
         }
     }
-    
+
     setMainPhoto = async (photo: IPhoto) => {
         this.loading = true;
         try {
@@ -89,5 +89,22 @@ export default class ProfileStore {
             toast.error('Problem deleting photo');
             this.loading = false;
         }
-    } 
+    }
+
+    updateProfile = async (profile: Partial<Profile>) => {
+        this.loading = true;
+        try {
+            await agent.Profiles.updateProfile(profile);
+            runInAction(() => {
+                if (profile.displayName && profile.displayName !== store.userStore.user?.displayName) {
+                    store.userStore.setDisplayName(profile.displayName);
+                }
+                this.profile = {...this.profile, ...profile as Profile}
+                this.loading = false;
+            })
+        } catch (error) {
+            toast.error('Problem updating profile');
+            this.loading = false;
+        }
+    }
 }
