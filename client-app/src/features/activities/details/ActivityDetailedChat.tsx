@@ -1,9 +1,12 @@
 import {observer} from 'mobx-react-lite'
-import {Segment, Header, Comment, Form, Button} from 'semantic-ui-react'
+import {Segment, Header, Comment, Form} from 'semantic-ui-react'
 import {useStore} from "../../../app/stores/store.ts";
 import {useEffect} from "react";
 import {FieldValues, useForm} from "react-hook-form";
 import AppTextArea from "../../../app/components/AppTextArea.tsx";
+import { formatDistanceToNow } from 'date-fns';
+import {yupResolver} from "@hookform/resolvers/yup";
+import * as Yup from 'yup';
 
 type Props = {
     activityId: string;
@@ -11,8 +14,11 @@ type Props = {
 
 function ActivityDetailedChat({activityId}: Props) {
     const {commentStore} = useStore();
-    const {handleSubmit, formState:{isSubmitting, isValid}, control} = useForm<FieldValues>({
-        mode: 'all'
+    const {handleSubmit, formState: {isValid}, control, reset} = useForm<FieldValues>({
+        mode: 'onSubmit',
+        resolver: yupResolver(Yup.object({
+            body: Yup.string().required()
+        } as FieldValues)),
     })
 
     useEffect(() => {
@@ -22,11 +28,11 @@ function ActivityDetailedChat({activityId}: Props) {
         }
     }, [commentStore, activityId])
 
-    function onSubmit(data:FieldValues){
-        //TODO
-        commentStore.addComment(data)
+    async function onSubmit(data: FieldValues) {
+        await commentStore.addComment(data as any);
+        reset();
     }
-    
+
     return (
         <>
             <Segment
@@ -38,7 +44,26 @@ function ActivityDetailedChat({activityId}: Props) {
             >
                 <Header>Chat about this event</Header>
             </Segment>
-            <Segment attached>
+           
+            <Segment attached clearing>
+                <Form reply onSubmit={handleSubmit(onSubmit)}>
+                    <AppTextArea 
+                        name={'body'} 
+                        placeholder={'Enter your comment (Enter to submit, SHIFT + Enter for new line)'} 
+                        rows={2}
+                        control={control}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.shiftKey) {
+                                return;
+                            }
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                isValid && handleSubmit(onSubmit)();
+                            }
+                        }}
+                    />
+                    
+                </Form>
                 <Comment.Group>
                     {commentStore.comments.map(comment => (
                         <Comment key={comment.id}>
@@ -46,27 +71,14 @@ function ActivityDetailedChat({activityId}: Props) {
                             <Comment.Content>
                                 <Comment.Author as='a'>{comment.displayName}</Comment.Author>
                                 <Comment.Metadata>
-                                    <div>{comment.createdAt}</div>
+                                    <div>{formatDistanceToNow(comment.createdAt)} ago</div>
                                 </Comment.Metadata>
-                                <Comment.Text>{comment.body}</Comment.Text>
+                                <Comment.Text style={{whiteSpace: 'pre-wrap'}}>{comment.body}</Comment.Text>
                             </Comment.Content>
                         </Comment>
                     ))}
-
-                    <Form reply onSubmit={handleSubmit(onSubmit)}>
-                        <AppTextArea name={'body'} placeholder={'Add Comment'} rows={2} control={control}/>
-                        <Button
-                            loading={isSubmitting}
-                            disabled={!isValid || isSubmitting}
-                            content='Add Reply'
-                            labelPosition='left'
-                            icon='edit'
-                            primary
-                            type={'submit'}
-                            floated={'right'}
-                        />
-                    </Form>
                 </Comment.Group>
+                
             </Segment>
         </>
     )

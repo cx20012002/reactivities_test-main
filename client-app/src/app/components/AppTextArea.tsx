@@ -3,7 +3,8 @@ import {FormField, Label, TextArea} from "semantic-ui-react";
 
 type Props = UseControllerProps & {
     rows?: number;
-    placeholder: string;
+    placeholder: string; 
+    onKeyDown?: (event: React.KeyboardEvent) => void;
 }
 
 function AppTextInput(props: Props) {
