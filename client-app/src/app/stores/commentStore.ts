@@ -1,6 +1,6 @@
 import {ChatComment} from "../models/comment.ts";
 import {HubConnection, HubConnectionBuilder, LogLevel} from "@microsoft/signalr";
-import {makeAutoObservable} from "mobx";
+import {makeAutoObservable, runInAction} from "mobx";
 import {store} from "./store.ts";
 
 export default class CommentStore {
@@ -24,15 +24,19 @@ export default class CommentStore {
             this.hubConnection.start().catch(error => console.log('Error establishing connection: ', error));
 
             this.hubConnection.on('LoadComments', (comments: ChatComment[]) => {
-                comments.forEach(comment => {
-                    comment.createdAt = new Date(comment.createdAt + 'Z');
+                runInAction(() =>{
+                    comments.forEach(comment => {
+                        comment.createdAt = new Date(comment.createdAt + 'Z');
+                    })
+                    this.comments = comments;
                 })
-                this.comments = comments;
             })
 
             this.hubConnection.on('ReceiveComment', (comment: ChatComment) => {
-                comment.createdAt = new Date(comment.createdAt);
-                this.comments.unshift(comment);
+                runInAction(()=>{
+                    comment.createdAt = new Date(comment.createdAt);
+                    this.comments.unshift(comment);
+                })
             })
 
             this.hubConnection.on('Send', (message: string) => {
@@ -48,5 +52,14 @@ export default class CommentStore {
     clearComments = () => {
         this.comments = [];
         this.stopHubConnection();
+    }
+    
+    addComment = async (values: { body: string, activityId?: string }) => {
+        values.activityId = store.activityStore.selectedActivity?.id;
+        try {
+            await this.hubConnection?.invoke('SendComment', values);
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
