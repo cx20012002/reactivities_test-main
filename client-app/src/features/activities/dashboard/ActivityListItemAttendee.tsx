@@ -2,12 +2,18 @@
 import {Profile} from "../../../app/models/Profile.ts";
 import {Link} from "react-router-dom";
 import ProfileCard from "../../profiles/ProfileCard.tsx";
+import {observer} from "mobx-react-lite";
 
 type Props = {
     attendees: Profile[];
 }
 
 function ActivityListItemAttendee({attendees}: Props) {
+    const styles = {
+        borderColor: 'orange',
+        borderWidth: 3
+    }
+    
     return (
         <List horizontal>
             {attendees.map(attendee => (
@@ -16,7 +22,13 @@ function ActivityListItemAttendee({attendees}: Props) {
                     key={attendee.username}
                     trigger={
                         <List.Item key={attendee.username} as={Link} to={`/profiles/${attendee.username}`}>
-                            <Image size='mini' circular src={attendee.image || '/assets/user.png'}/>
+                            <Image 
+                                size='mini'
+                                circular 
+                                src={attendee.image || '/assets/user.png'}
+                                bordered
+                                style={attendee.following ? styles : null}
+                            />
                         </List.Item>
                     }
                 >
@@ -29,4 +41,4 @@ function ActivityListItemAttendee({attendees}: Props) {
     )
 }
 
-export default ActivityListItemAttendee;
+export default observer(ActivityListItemAttendee);
