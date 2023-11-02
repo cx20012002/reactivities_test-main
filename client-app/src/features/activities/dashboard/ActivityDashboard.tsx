@@ -3,10 +3,10 @@ import ActivityList from "./ActivityList.tsx";
 import {useStore} from "../../../app/stores/store.ts";
 import {observer} from "mobx-react-lite";
 import {useEffect, useState} from "react";
-import LoadingComponent from "../../../app/layout/LoadingComponent.tsx";
 import ActivityFilters from "./ActivityFilters.tsx";
 import {PagingParams} from "../../../app/models/Pagination.ts";
 import InfiniteScroll from "react-infinite-scroller";
+import ActivityListItemPlaceholder from "./ActivityListItemPlaceholder.tsx";
 
 
 function ActivityDashboard() {
@@ -24,19 +24,25 @@ function ActivityDashboard() {
         if (activityRegistry.size <= 1) loadActivities()
     }, [loadActivities, activityRegistry.size]);
 
-    if (activityStore.loadingInitial && !loadingNext) return <LoadingComponent content={'Loading app'}/>
 
     return (
         <Grid>
             <Grid.Column width='10'>
-                <InfiniteScroll
-                    pageStart={0}
-                    loadMore={handleGetNext}
-                    hasMore={!loadingNext && !!pagination && pagination.currentPage < pagination.totalPages}
-                    initialLoad={false}
-                >
-                    <ActivityList/>
-                </InfiniteScroll>
+                {activityStore.loadingInitial && activityRegistry.size === 0 && !loadingNext ? (
+                    <>
+                        <ActivityListItemPlaceholder/>
+                        <ActivityListItemPlaceholder/>
+                    </>
+                ) : (
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={handleGetNext}
+                        hasMore={!loadingNext && !!pagination && pagination.currentPage < pagination.totalPages}
+                        initialLoad={false}
+                    >
+                        <ActivityList/>
+                    </InfiniteScroll>
+                )}
             </Grid.Column>
             <Grid.Column width='6'>
                 <ActivityFilters/>
